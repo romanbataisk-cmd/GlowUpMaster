@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Запись к мастеру</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --black:   #000000;
+      --bg:      #05070f;
+      --bg1:     #080c18;
+      --bg2:     #0c1120;
+      --bg3:     #111828;
+      --blue:    #2563eb;
+      --blue-l:  #3b82f6;
+      --blue-ll: #60a5fa;
+      --cyan:    #0ea5e9;
+      --border:  #1a2744;
+      --border-a:#2563eb;
+      --text:    #f0f4ff;
+      --dim:     #6b7fa8;
+      --muted:   #2a3650;
+      --green:   #10b981;
+      --red:     #ef4444;
+      --r:       14px;
+      --rsm:     10px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    .wrap { max-width: 480px; margin: 0 auto; padding-bottom: 32px; }
+
+    /* ── Steps ───────────────────────────────────── */
+    .step { display: none; }
+    .step.on {
+      display: block;
+      animation: fadeUp .3s cubic-bezier(.2,1,.4,1) both;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── Progress ────────────────────────────────── */
+    .progress {
+      height: 2px;
+      background: var(--bg3);
+      position: relative;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--blue);
+      transition: width .5s cubic-bezier(.2,1,.4,1);
+    }
+
+    /* ── Step header ─────────────────────────────── */
+    .step-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 20;
+    }
+    .back {
+      width: 34px; height: 34px; flex-shrink: 0;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--blue-l);
+      font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, transform .15s;
+    }
+    .back:active { background: var(--bg3); transform: scale(.92); }
+    .step-head-info h2 { font-size: 16px; font-weight: 700; }
+    .step-head-info p  { font-size: 12px; color: var(--dim); margin-top: 1px; }
+
+    /* ── Master header ───────────────────────────── */
+    .master-top {
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border);
+      padding: 40px 20px 32px;
+      text-align: center;
+    }
+    .avatar-outer {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      border: 2px solid var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      background: var(--bg2);
+      position: relative;
+      animation: pulseRing 2.5s ease-in-out infinite;
+    }
+    @keyframes pulseRing {
+      0%,100% { box-shadow: 0 0 0 0 rgba(37,99,235,.0); }
+      50%      { box-shadow: 0 0 0 8px rgba(37,99,235,.12); }
+    }
+    .avatar-letter {
+      font-size: 32px; font-weight: 800;
+      color: var(--blue-l);
+    }
+    .master-name {
+      font-size: 22px; font-weight: 800;
+      color: var(--text); letter-spacing: -.3px;
+    }
+    .master-spec {
+      font-size: 13px; color: var(--dim); margin-top: 5px;
+    }
+
+    /* ── Section ─────────────────────────────────── */
+    .sec { padding: 20px 14px 0; }
+    .sec-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px; padding: 0 2px;
+    }
+
+    /* ── Service cards ───────────────────────────── */
+    .svc-list { display: flex; flex-direction: column; gap: 8px; }
+    .svc-card {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 15px 16px;
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .15s;
+    }
+    .svc-card:active {
+      border-color: var(--border-a);
+      background: var(--bg2);
+      transform: scale(.985);
+    }
+    .svc-body { flex: 1; min-width: 0; }
+    .svc-name { font-size: 15px; font-weight: 600; }
+    .svc-meta { font-size: 12px; color: var(--dim); margin-top: 3px; }
+    .svc-price {
+      font-size: 16px; font-weight: 700;
+      color: var(--blue-l); flex-shrink: 0;
+    }
+    .svc-arr { color: var(--muted); font-size: 20px; flex-shrink: 0; }
+    .svc-prepay {
+      font-size: 11px; font-weight: 600;
+      color: var(--cyan);
+      margin-top: 4px;
+    }
+
+    /* ── Calendar ─────────────────────────────────── */
+    .cal-wrap {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+      margin: 14px 14px 0;
+    }
+    .cal-head {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 12px;
+    }
+    .cal-month { font-size: 15px; font-weight: 700; }
+    .cal-btn {
+      width: 32px; height: 32px;
+      border-radius: var(--rsm);
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--blue-l);
+      font-size: 17px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, transform .12s;
+    }
+    .cal-btn:active { background: var(--bg3); transform: scale(.9); }
+
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+    .cal-dn {
+      text-align: center; font-size: 9px; font-weight: 700;
+      color: var(--muted); padding: 4px 0 8px;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .cal-d {
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      position: relative;
+    }
+    .cal-d:not(.past):not(.sel):active { background: var(--bg3); color: var(--blue-l); }
+    .cal-d.past   { color: var(--muted); cursor: default; opacity: .45; }
+    .cal-d.today  { color: var(--blue-l); font-weight: 800; }
+    .cal-d.today::after {
+      content: '';
+      position: absolute; bottom: 3px; left: 50%;
+      transform: translateX(-50%);
+      width: 3px; height: 3px; border-radius: 50%;
+      background: var(--blue-l);
+    }
+    .cal-d.sel {
+      background: var(--blue);
+      color: #fff; font-weight: 700;
+      animation: pop .25s cubic-bezier(.2,1,.4,1);
+    }
+    @keyframes pop {
+      0%   { transform: scale(.7); }
+      65%  { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    /* ── Time slots ──────────────────────────────── */
+    .slots-wrap {
+      margin: 14px 14px 0;
+      animation: fadeUp .25s ease both;
+    }
+    .time-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; }
+    .slot {
+      padding: 10px 4px;
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: var(--rsm);
+      text-align: center;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; color: var(--text);
+      transition: border-color .15s, background .15s, color .15s, transform .12s;
+    }
+    .slot:active { transform: scale(.93); }
+    .slot.sel {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+      animation: pop .25s cubic-bezier(.2,1,.4,1);
+    }
+
+    /* ── Button ──────────────────────────────────── */
+    .btn-wrap { padding: 18px 14px; }
+    .btn {
+      width: 100%; padding: 14px;
+      border-radius: var(--rsm);
+      font-size: 15px; font-weight: 700;
+      border: none; cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      position: relative; overflow: hidden;
+    }
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,.1);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .btn-primary:not(:disabled):active { transform: scale(.97); }
+    .btn-primary:not(:disabled):active::after { opacity: 1; }
+    .btn-primary:disabled { opacity: .3; cursor: not-allowed; }
+
+    /* ── Confirm card ────────────────────────────── */
+    .confirm-card {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 4px 16px;
+      margin: 0 14px;
+    }
+    .confirm-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--bg3);
+    }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-ico {
+      width: 36px; height: 36px; flex-shrink: 0;
+      border-radius: 9px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .confirm-lbl { font-size: 11px; color: var(--dim); margin-bottom: 2px; }
+    .confirm-val { font-size: 14px; font-weight: 600; }
+
+    /* ── Form ────────────────────────────────────── */
+    .form-wrap { padding: 18px 14px 0; }
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: block;
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin-bottom: 7px;
+    }
+    .field input {
+      width: 100%; padding: 13px 14px;
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: var(--rsm);
+      font-size: 15px; color: var(--text);
+      outline: none;
+      transition: border-color .2s;
+      -webkit-appearance: none;
+    }
+    .field input::placeholder { color: var(--muted); }
+    .field input:focus { border-color: var(--blue-l); }
+
+    /* ── Dots loader ─────────────────────────────── */
+    .dots-row {
+      display: flex; gap: 6px; justify-content: center;
+      padding: 16px; grid-column: 1/-1;
+    }
+    .dots-row span {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--blue);
+      animation: db 1.1s ease-in-out infinite;
+    }
+    .dots-row span:nth-child(2) { animation-delay: .18s; }
+    .dots-row span:nth-child(3) { animation-delay: .36s; }
+    @keyframes db {
+      0%,80%,100% { transform:scale(.5); opacity:.3; }
+      40%         { transform:scale(1);  opacity:1; }
+    }
+
+    /* ── Success ─────────────────────────────────── */
+    .success {
+      min-height: 100svh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 48px 20px; text-align: center;
+    }
+    .success-icon {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      background: var(--bg2);
+      border: 2px solid var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px;
+      margin-bottom: 24px;
+      animation: float 3s ease-in-out infinite, appear .5s cubic-bezier(.2,1,.4,1) both;
+    }
+    @keyframes float  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    @keyframes appear { from{opacity:0;transform:scale(.5)} to{opacity:1;transform:scale(1)} }
+    .success-title {
+      font-size: 26px; font-weight: 900;
+      color: var(--text); margin-bottom: 8px;
+      animation: fadeUp .4s .15s ease both;
+    }
+    .success-sub {
+      font-size: 14px; color: var(--dim);
+      margin-bottom: 26px;
+      animation: fadeUp .4s .25s ease both;
+    }
+    .success-card {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 4px 16px;
+      width: 100%; text-align: left;
+      animation: fadeUp .4s .35s ease both;
+    }
+    .success-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 0; font-size: 13px;
+      border-bottom: 1px solid var(--bg3);
+    }
+    .success-row:last-child { border-bottom: none; }
+
+    /* ── Confetti ────────────────────────────────── */
+    #confetti {
+      position: fixed; inset: 0;
+      pointer-events: none; overflow: hidden; z-index: 0;
+    }
+    .confetto {
+      position: absolute;
+      border-radius: 2px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { opacity:1; transform:translateY(-8px) rotate(0deg); }
+      100% { opacity:0; transform:translateY(110vh) rotate(540deg); }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- STEP 1: Services -->
+  <div class="step on" id="step-1">
+    <div class="master-top">
+      <div class="avatar-outer">
+        <span class="avatar-letter" id="master-avatar-letter">?</span>
+      </div>
+      <div class="master-name" id="master-name">Загрузка…</div>
+      <div class="master-spec" id="master-specialty"></div>
+    </div>
+    <div class="progress"><div class="progress-bar" style="width:25%"></div></div>
+    <div class="sec">
+      <div class="sec-label">Выберите услугу</div>
+      <div class="svc-list" id="services-list"></div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Date & Time -->
+  <div class="step" id="step-2">
+    <div class="step-head">
+      <button class="back" onclick="goStep(1)">‹</button>
+      <div class="step-head-info">
+        <h2>Дата и время</h2>
+        <p id="selected-svc-name"></p>
+      </div>
+    </div>
+    <div class="progress"><div class="progress-bar" style="width:50%"></div></div>
+
+    <div class="cal-wrap">
+      <div class="cal-head">
+        <button class="cal-btn" id="cal-prev">‹</button>
+        <span class="cal-month" id="cal-month"></span>
+        <button class="cal-btn" id="cal-next">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <div class="slots-wrap" id="slots-section" style="display:none">
+      <div class="sec-label">Время · <span id="selected-date"></span></div>
+      <div class="time-grid" id="time-grid"></div>
+    </div>
+
+    <div class="btn-wrap">
+      <button class="btn btn-primary" id="btn-to-confirm" disabled onclick="goToConfirm()">
+        Продолжить →
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Confirm -->
+  <div class="step" id="step-3">
+    <div class="step-head">
+      <button class="back" onclick="goStep(2)">‹</button>
+      <div class="step-head-info">
+        <h2>Подтверждение</h2>
+        <p>Проверьте детали</p>
+      </div>
+    </div>
+    <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
+
+    <div class="sec">
+      <div class="sec-label">Детали записи</div>
+      <div class="confirm-card">
+        <div class="confirm-row">
+          <div class="confirm-ico">💼</div>
+          <div>
+            <div class="confirm-lbl">Услуга</div>
+            <div class="confirm-val" id="confirm-svc"></div>
+          </div>
+        </div>
+        <div class="confirm-row">
+          <div class="confirm-ico">📅</div>
+          <div>
+            <div class="confirm-lbl">Дата и время</div>
+            <div class="confirm-val">
+              <span id="confirm-date"></span>&nbsp;в&nbsp;<span id="confirm-time"></span>
+            </div>
+          </div>
+        </div>
+        <div class="confirm-row">
+          <div class="confirm-ico">💰</div>
+          <div>
+            <div class="confirm-lbl">Стоимость услуги</div>
+            <div class="confirm-val" id="confirm-price"></div>
+          </div>
+        </div>
+        <div class="confirm-row" id="confirm-prepay-row" style="display:none">
+          <div class="confirm-ico">💳</div>
+          <div>
+            <div class="confirm-lbl">Предоплата (сейчас)</div>
+            <div class="confirm-val" id="confirm-prepay" style="color:#60a5fa"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-wrap">
+      <div class="sec-label">Ваши данные</div>
+      <div class="field">
+        <label>Имя *</label>
+        <input id="book-name" type="text" placeholder="Введите ваше имя" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Телефон *</label>
+        <input id="book-phone" type="tel" placeholder="+7 (999) 000-00-00" autocomplete="tel">
+      </div>
+    </div>
+
+    <div class="btn-wrap">
+      <button class="btn btn-primary" id="btn-submit" onclick="proceedFromConfirm()">
+        Подтвердить запись
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Payment (only for paid services) -->
+  <div class="step" id="step-4">
+    <div class="step-head">
+      <button class="back" onclick="goStep(3)">‹</button>
+      <div class="step-head-info">
+        <h2>Оплата</h2>
+        <p id="pay-amount-label"></p>
+      </div>
+    </div>
+    <div class="progress"><div class="progress-bar" style="width:88%"></div></div>
+    <div class="sec">
+      <div class="sec-label">Выберите способ оплаты</div>
+      <div class="svc-list">
+        <div class="svc-card" id="pay-stars-btn" onclick="payWithStars()">
+          <div class="svc-body">
+            <div class="svc-name">⭐ Telegram Stars</div>
+            <div class="svc-meta" id="pay-stars-sub">Мгновенно внутри Telegram</div>
+          </div>
+          <span class="svc-arr">›</span>
+        </div>
+        <div class="svc-card" id="pay-card-btn" onclick="payWithCard()">
+          <div class="svc-body">
+            <div class="svc-name">💳 Банковская карта</div>
+            <div class="svc-meta">Через ЮКасса — Visa, Mastercard, МИР</div>
+          </div>
+          <span class="svc-arr">›</span>
+        </div>
+      </div>
+    </div>
+    <div id="pay-loading" style="display:none;padding:24px">
+      <div class="dots-row"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <!-- STEP 5: Success -->
+  <div class="step" id="step-5">
+    <div id="confetti"></div>
+    <div class="success">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Вы записаны!</div>
+      <div class="success-sub">Мастер получил уведомление о вашей записи</div>
+      <div class="success-card" id="success-details"></div>
+    </div>
+  </div>
+
+</div>
+<script src="/js/book.js"></script>
+</body>
+</html>

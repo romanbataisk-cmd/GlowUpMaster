@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>GlowUp Master</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    // Dev mode: set test user ID when running outside Telegram
+    const _urlParams = new URLSearchParams(location.search);
+    window._devUserId = parseInt(_urlParams.get('uid') || '100');
+  </script>
+</head>
+<body>
+
+<!-- ── Onboarding ─────────────────────────────────────────────────────── -->
+<div class="onboarding" id="onboarding">
+  <div class="onboarding-logo">✨</div>
+  <h1>GlowUp Master</h1>
+  <p>Управляйте записями и клиентами прямо в Telegram</p>
+  <div class="form-group">
+    <div class="field">
+      <label>Ваше имя</label>
+      <input id="ob-name" type="text" placeholder="Имя Фамилия">
+    </div>
+    <div class="field">
+      <label>Специальность</label>
+      <input id="ob-specialty" type="text" placeholder="Например: Мастер маникюра">
+    </div>
+    <div class="field">
+      <label>Телефон</label>
+      <input id="ob-phone" type="tel" placeholder="+7 (999) 000-00-00">
+    </div>
+    <button class="btn btn-primary" onclick="submitOnboarding()">Начать работу →</button>
+  </div>
+</div>
+
+<!-- ── Pages ──────────────────────────────────────────────────────────── -->
+
+<!-- Home -->
+<div class="page" id="home">
+  <div class="page-header">
+    <h1 id="home-greeting">Добро пожаловать!</h1>
+    <p>Сводка на сегодня</p>
+  </div>
+  <div id="sub-banner"></div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value" id="stat-today">–</div><div class="stat-label">Сегодня</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-week">–</div><div class="stat-label">За неделю</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-clients">–</div><div class="stat-label">Клиентов</div></div>
+    <div class="stat-card"><div class="stat-value" id="stat-revenue">–</div><div class="stat-label">Выручка / нед.</div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Записи на сегодня</div>
+    <div id="today-bookings"><div class="loading">Загрузка…</div></div>
+  </div>
+  <div class="section">
+    <button class="btn btn-primary" onclick="showPage('bookings');showAddBookingModal()">+ Новая запись</button>
+  </div>
+</div>
+
+<!-- Bookings -->
+<div class="page" id="bookings">
+  <div class="page-header">
+    <h1>Записи</h1>
+  </div>
+  <div class="date-strip" id="date-strip"></div>
+  <div id="bookings-list"><div class="loading">Загрузка…</div></div>
+  <div style="padding:0 16px 16px">
+    <button class="btn btn-primary" onclick="showAddBookingModal()">+ Добавить запись</button>
+  </div>
+</div>
+
+<!-- Clients -->
+<div class="page" id="clients">
+  <div class="page-header">
+    <h1>Клиенты</h1>
+  </div>
+  <div class="search-bar">
+    <input id="client-search" type="search" placeholder="🔍 Поиск по имени или телефону"
+           oninput="searchClients()">
+  </div>
+  <div id="clients-list"><div class="loading">Загрузка…</div></div>
+  <div style="padding:0 16px 16px">
+    <button class="btn btn-primary" onclick="showAddClientModal()">+ Добавить клиента</button>
+  </div>
+</div>
+
+<!-- Client detail (overlay) -->
+<div id="client-detail" style="display:none;position:fixed;inset:0;background:var(--bg2);z-index:150;overflow-y:auto;padding-bottom:80px"></div>
+
+<!-- Services -->
+<div class="page" id="services">
+  <div class="page-header">
+    <h1>Услуги</h1>
+    <p>Управляйте вашим прайс-листом</p>
+  </div>
+  <div id="services-list"><div class="loading">Загрузка…</div></div>
+  <div style="padding:0 16px 16px">
+    <button class="btn btn-primary" onclick="showAddServiceModal()">+ Добавить услугу</button>
+  </div>
+</div>
+
+<!-- Profile -->
+<div class="page" id="profile">
+  <div class="page-header"><h1>Профиль</h1></div>
+  <div id="sub-info" style="padding:0 16px 8px"></div>
+  <div class="section">
+    <div class="section-title">Информация</div>
+    <div class="form-group">
+      <div class="field"><label>Имя</label><input id="prof-name" type="text" placeholder="Ваше имя"></div>
+      <div class="field"><label>Специальность</label><input id="prof-specialty" type="text" placeholder="Мастер маникюра…"></div>
+      <div class="field"><label>О себе</label><textarea id="prof-bio" placeholder="Расскажите клиентам о себе…"></textarea></div>
+      <div class="field"><label>Телефон</label><input id="prof-phone" type="tel"></div>
+      <button class="btn btn-primary" onclick="saveProfile()">Сохранить</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Ссылка для клиентов</div>
+    <div class="card">
+      <div class="card-sub" style="margin-bottom:8px">Отправьте клиентам — они выберут услугу, дату и время</div>
+
+      <!-- Telegram deep link (основная) -->
+      <div id="tg-link-row" style="display:none;margin-bottom:10px">
+        <div style="font-size:12px;color:var(--hint);margin-bottom:6px">Через Telegram-бота</div>
+        <div class="flex gap-8">
+          <input id="tg-booking-link" type="text" readonly
+                 style="flex:1;padding:10px 12px;background:var(--bg2);border:none;border-radius:10px;font-size:13px;color:var(--hint)">
+          <button class="btn btn-primary btn-sm" onclick="copyTgBookingLink()">Копировать</button>
+        </div>
+      </div>
+
+      <!-- Web link (резервная) -->
+      <div>
+        <div style="font-size:12px;color:var(--hint);margin-bottom:6px">Прямая веб-ссылка</div>
+        <div class="flex gap-8">
+          <input id="booking-link" type="text" readonly
+                 style="flex:1;padding:10px 12px;background:var(--bg2);border:none;border-radius:10px;font-size:13px;color:var(--hint)">
+          <button class="btn btn-secondary btn-sm" onclick="copyBookingLink()">Копировать</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Bottom nav ─────────────────────────────────────────────────────── -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-page="home" onclick="showPage('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Главная
+  </button>
+  <button class="nav-btn" data-page="bookings" onclick="showPage('bookings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Записи
+  </button>
+  <button class="nav-btn" data-page="clients" onclick="showPage('clients')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    Клиенты
+  </button>
+  <button class="nav-btn" data-page="services" onclick="showPage('services')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Услуги
+  </button>
+  <button class="nav-btn" data-page="profile" onclick="showPage('profile')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Профиль
+  </button>
+</nav>
+
+<!-- ── Modals ──────────────────────────────────────────────────────────── -->
+
+<!-- Add Booking -->
+<div class="modal-overlay" id="modal-booking" onclick="if(event.target===this)closeModal('modal-booking')">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2>Новая запись</h2>
+      <button class="modal-close" onclick="closeModal('modal-booking')">✕</button>
+    </div>
+    <div class="form-group">
+      <div class="field">
+        <label>Клиент из списка (или введите вручную)</label>
+        <select id="booking-client"><option value="">— Новый клиент —</option></select>
+      </div>
+      <div class="field"><label>Имя клиента</label><input id="booking-client-name" type="text" placeholder="Имя"></div>
+      <div class="field"><label>Телефон</label><input id="booking-client-phone" type="tel" placeholder="+7 (999) 000-00-00"></div>
+      <div class="field">
+        <label>Услуга</label>
+        <select id="booking-service" onchange="loadSlotsForBooking()"><option value="">Выберите услугу</option></select>
+      </div>
+      <div class="field"><label>Дата</label><input id="booking-date" type="date" onchange="loadSlotsForBooking()"></div>
+      <div class="field">
+        <label>Время</label>
+        <select id="booking-time"><option value="">Сначала выберите услугу и дату</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="submitBooking()">Создать запись</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Client -->
+<div class="modal-overlay" id="modal-client" onclick="if(event.target===this)closeModal('modal-client')">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2>Новый клиент</h2>
+      <button class="modal-close" onclick="closeModal('modal-client')">✕</button>
+    </div>
+    <div class="form-group">
+      <div class="field"><label>Имя *</label><input id="client-name" type="text" placeholder="Имя Фамилия"></div>
+      <div class="field"><label>Телефон</label><input id="client-phone" type="tel" placeholder="+7 (999) 000-00-00"></div>
+      <div class="field"><label>Заметки</label><textarea id="client-notes" placeholder="Предпочтения, особенности…"></textarea></div>
+      <button class="btn btn-primary" onclick="submitClient()">Добавить клиента</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Service -->
+<div class="modal-overlay" id="modal-service" onclick="if(event.target===this)closeModal('modal-service')">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2 id="svc-modal-title">Новая услуга</h2>
+      <button class="modal-close" onclick="closeModal('modal-service')">✕</button>
+    </div>
+    <input type="hidden" id="svc-id">
+    <div class="form-group">
+      <div class="field"><label>Название *</label><input id="svc-name" type="text" placeholder="Маникюр, Стрижка…"></div>
+      <div class="field"><label>Описание</label><input id="svc-desc" type="text" placeholder="Краткое описание"></div>
+      <div class="field"><label>Длительность (мин)</label><input id="svc-duration" type="text" inputmode="numeric" placeholder="60"></div>
+      <div class="field"><label>Полная цена (₽)</label><input id="svc-price" type="text" inputmode="decimal" placeholder="0 = бесплатно"></div>
+      <div class="field">
+        <label>Предоплата при записи (₽)</label>
+        <input id="svc-prepay" type="text" inputmode="decimal" placeholder="0 = без предоплаты">
+        <div style="font-size:11px;color:var(--hint);margin-top:4px">Клиент платит эту сумму при бронировании</div>
+      </div>
+      <button class="btn btn-primary" onclick="submitService()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Subscribe modal -->
+<div class="modal-overlay" id="modal-subscribe" onclick="if(event.target===this)closeModal('modal-subscribe')">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2>Оформить подписку</h2>
+      <button class="modal-close" onclick="closeModal('modal-subscribe')">✕</button>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">GlowUp Master — 30 дней</div>
+      <div class="card-sub" style="margin-top:4px">Неограниченные записи, клиенты и расписание</div>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary" onclick="subscribeStars()">⭐ Оплатить 299 Stars</button>
+      <button class="btn btn-secondary" onclick="subscribeYookassa()">💳 Оплатить картой — <span id="sub-rub-price">299 ₽</span></button>
+    </div>
+    <p style="font-size:12px;color:var(--hint);text-align:center;margin-top:12px">
+      Stars — мгновенно внутри Telegram.<br>Картой — через ЮКасса, Visa / MC / МИР.
+    </p>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
