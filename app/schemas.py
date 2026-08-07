@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -10,11 +10,11 @@ class ProfileUpdate(BaseModel):
 
 
 class ServiceCreate(BaseModel):
-    name: str
-    description: str = ""
-    duration: int = 60
-    price: float = 0
-    prepay: float = 0
+    name: str = Field(min_length=2, max_length=100)
+    description: str = Field(default="", max_length=1000)
+    duration: int = Field(default=60, ge=15, le=480)
+    price: float = Field(default=0, ge=0)
+    prepay: float = Field(default=0, ge=0)
 
 
 class ServiceUpdate(BaseModel):
