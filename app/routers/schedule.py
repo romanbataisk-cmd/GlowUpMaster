@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from app.auth import get_current_user
 from app.database import get_schedule, save_schedule, get_days_off, toggle_day_off
-from app.models import ScheduleDay
+from app.schemas import ScheduleDay
 from typing import List
 
 router = APIRouter(tags=["schedule"])

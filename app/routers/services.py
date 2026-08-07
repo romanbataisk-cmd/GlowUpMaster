@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.auth import get_current_user
 from app.database import get_services, create_service, update_service, delete_service
-from app.models import ServiceCreate, ServiceUpdate
+from app.schemas import ServiceCreate, ServiceUpdate
 
 router = APIRouter(tags=["services"])
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.auth import get_current_user
 from app.database import get_clients, create_client, update_client, delete_client, get_bookings
-from app.models import ClientCreate, ClientUpdate
+from app.schemas import ClientCreate, ClientUpdate
 
 router = APIRouter(tags=["clients"])
 

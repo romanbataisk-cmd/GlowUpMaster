@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from app.auth import get_current_user
 from app.database import upsert_master, update_master, get_master, master_access, get_stats
-from app.models import ProfileUpdate
+from app.schemas import ProfileUpdate
 
 router = APIRouter(tags=["master"])
 

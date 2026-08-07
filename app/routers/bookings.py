@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from app.auth import get_current_user
 from app.database import (get_bookings, create_booking, update_booking_status,
                           get_available_slots, get_master)
-from app.models import (BookingCreate, BookingStatusUpdate, PublicBookingCreate,
+from app.schemas import (BookingCreate, BookingStatusUpdate, PublicBookingCreate,
                         BookingPaymentCreate, StarsInvoiceCreate)
 
 router = APIRouter(tags=["bookings"])
