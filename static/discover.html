@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <title>GlowUp — студии рядом</title>
+  <link rel="stylesheet" href="/css/discover.css">
+  <link rel="stylesheet" href="/css/discover-grid.css">
+  <link rel="stylesheet" href="/css/city-picker.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <button class="profile-orb" type="button" aria-label="Профиль">Д</button>
+      <button class="location-button" type="button" id="location-button">
+        <span class="location-pulse"></span>
+        <span><small>Ищем рядом</small><strong id="current-location">Хамовники, Москва</strong></span>
+        <span aria-hidden="true">⌄</span>
+      </button>
+      <button class="icon-button" type="button" aria-label="Уведомления"><span class="notification-dot"></span>♢</button>
+    </header>
+
+    <section class="view active" id="nearby-view">
+      <div class="intro-copy">
+        <span class="eyebrow">GLOWUP NEARBY</span>
+        <h1>Красота<br><span>совсем рядом.</span></h1>
+        <p>Находим проверенных мастеров со свободным временем сегодня.</p>
+      </div>
+
+      <section class="radar-card" aria-label="Студии поблизости">
+        <div class="radar-grid"></div>
+        <div class="radar-ring ring-one"></div><div class="radar-ring ring-two"></div><div class="radar-ring ring-three"></div>
+        <div class="radar-sweep"></div>
+        <div class="user-pin"><i></i><span>Вы здесь</span></div>
+        <button class="studio-pin pin-a" type="button" data-studio="1"><span>AM</span><i>0.4 км</i></button>
+        <button class="studio-pin pin-b" type="button" data-studio="2"><span>LS</span><i>0.8 км</i></button>
+        <button class="studio-pin pin-c" type="button" data-studio="3"><span>NO</span><i>1.2 км</i></button>
+        <div class="radar-status"><span id="online-studios"><i></i> 12 студий онлайн</span><button id="map-toggle" type="button">Открыть карту ↗</button></div>
+      </section>
+
+      <button class="smart-match" type="button" id="smart-match-button">
+        <span class="match-spark">✦</span>
+        <span><strong>Подобрать за 20 секунд</strong><small>Ответьте на 3 вопроса — найдём лучший вариант</small></span>
+        <span aria-hidden="true">→</span>
+      </button>
+
+      <section class="section-block">
+        <div class="section-head"><div><span class="eyebrow">ГОРЯЧИЕ ОКНА</span><h2>Можно сегодня</h2></div><button type="button" class="text-button">Все 24</button></div>
+        <div class="last-minute-list">
+          <article class="minute-card peach" data-category="hair">
+            <div class="minute-top"><span class="studio-mini">AM</span><span class="discount">−20%</span></div>
+            <div><small>Стрижка + укладка</small><strong>14:30</strong><span>Алина · 0.4 км</span></div>
+            <a href="/book.html?master=100">Забрать окно</a>
+          </article>
+          <article class="minute-card violet" data-category="nails">
+            <div class="minute-top"><span class="studio-mini">LS</span><span class="discount">−15%</span></div>
+            <div><small>Маникюр + покрытие</small><strong>16:00</strong><span>Luna · 0.8 км</span></div>
+            <a href="/book.html?master=100">Забрать окно</a>
+          </article>
+          <article class="minute-card aqua" data-category="brows">
+            <div class="minute-top"><span class="studio-mini">NO</span><span class="discount">−10%</span></div>
+            <div><small>Архитектура бровей</small><strong>18:20</strong><span>Nude · 1.2 км</span></div>
+            <a href="/book.html?master=100">Забрать окно</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-block">
+        <div class="section-head"><div><span class="eyebrow">ПОДБОРКА ДЛЯ ВАС</span><h2>Студии рядом</h2></div><button class="view-switch" type="button" id="view-switch" aria-label="Переключить вид">▦</button></div>
+        <div class="category-row" id="category-row">
+          <button class="category active" type="button" data-filter="all">Все</button>
+          <button class="category" type="button" data-filter="hair">Волосы</button>
+          <button class="category" type="button" data-filter="nails">Ногти</button>
+          <button class="category" type="button" data-filter="brows">Брови</button>
+          <button class="category" type="button" data-filter="massage">Массаж</button>
+        </div>
+        <div class="studio-list" id="studio-list"></div>
+        <div class="empty-filter" id="empty-filter"><span>⌁</span><strong>Пока ничего рядом</strong><p>Попробуйте другую категорию или увеличьте радиус.</p></div>
+      </section>
+    </section>
+
+    <section class="view" id="favorites-view">
+      <div class="view-title"><span class="eyebrow">ВАША КОЛЛЕКЦИЯ</span><h1>Избранное</h1><p>Студии, к которым хочется вернуться.</p></div>
+      <div class="studio-list" id="favorites-list"></div>
+      <div class="empty-state" id="favorites-empty"><span>♡</span><strong>Сохраняйте любимых</strong><p>Нажмите на сердечко в карточке студии.</p><button type="button" data-go="nearby">Найти студию</button></div>
+    </section>
+
+    <section class="view" id="bookings-view">
+      <div class="view-title"><span class="eyebrow">ВАШИ ПЛАНЫ</span><h1>Записи</h1><p>Всё, что запланировано и уже понравилось.</p></div>
+      <article class="upcoming-card">
+        <div class="upcoming-date"><strong>09</strong><span>авг</span></div>
+        <div><small>Завтра · 14:30</small><strong>Стрижка + укладка</strong><span>Алина Морозова · 0.4 км</span></div>
+        <button type="button">•••</button>
+      </article>
+      <button class="repeat-card" type="button"><span>↻</span><span><strong>Повторить любимую запись</strong><small>Экспресс-укладка · 2 400 ₽</small></span><span>→</span></button>
+      <div class="loyalty-card"><div><span class="eyebrow">GLOW БАЛЛЫ</span><strong>340</strong><p>Ещё 160 — и скидка 500 ₽</p></div><div class="loyalty-ring"><span>68%</span></div></div>
+    </section>
+
+    <section class="view" id="profile-view">
+      <div class="view-title"><span class="eyebrow">GLOWUP ID</span><h1>Даша</h1><p>Ваши предпочтения и награды.</p></div>
+      <div class="profile-card"><div class="profile-big">Д</div><div><strong>Уровень «Сияние»</strong><span>4 записи в этом месяце</span></div><span>✦ 340</span></div>
+      <div class="settings-list"><button type="button"><span>◎</span><strong>Район поиска</strong><small>Хамовники · 3 км</small><i>›</i></button><button type="button"><span>♧</span><strong>Предпочтения</strong><small>Волосы, брови</small><i>›</i></button><button type="button"><span>♢</span><strong>Напоминания</strong><small>За день и за 2 часа</small><i>›</i></button><a href="/index.html?uid=100"><span>↗</span><strong>Я мастер</strong><small>Открыть рабочий кабинет</small><i>›</i></a></div>
+    </section>
+  </main>
+
+  <nav class="client-nav" aria-label="Основная навигация">
+    <button class="active" type="button" data-view="nearby"><span>⌁</span><small>Рядом</small></button>
+    <button type="button" data-view="favorites"><span>♡</span><small>Избранное</small></button>
+    <button type="button" data-view="bookings"><span>▣</span><small>Записи</small></button>
+    <button type="button" data-view="profile"><span>○</span><small>Профиль</small></button>
+  </nav>
+
+  <div class="sheet-backdrop" id="sheet-backdrop"></div>
+  <section class="bottom-sheet" id="match-sheet" aria-modal="true" role="dialog" aria-labelledby="match-title">
+    <div class="sheet-grip"></div><button class="sheet-close" id="sheet-close" type="button">×</button>
+    <span class="eyebrow">SMART MATCH</span><h2 id="match-title">Что хочется сделать?</h2><p>Выберите вариант — подберём студию по времени, цене и отзывам.</p>
+    <div class="match-options"><button type="button" data-match="hair">Стрижка или укладка</button><button type="button" data-match="nails">Маникюр</button><button type="button" data-match="brows">Брови</button><button type="button" data-match="massage">Массаж</button></div>
+    <button class="match-next" id="match-next" type="button" disabled>Показать лучший вариант <span>→</span></button>
+  </section>
+
+  <section class="bottom-sheet city-sheet" id="city-sheet" aria-modal="true" role="dialog" aria-labelledby="city-title">
+    <div class="sheet-grip"></div><button class="sheet-close" id="city-close" type="button">×</button>
+    <span class="eyebrow">ГЕОГРАФИЯ GLOWUP</span><h2 id="city-title">Выберите город</h2><p>Покажем студии, свободные окна и цены рядом с вами.</p>
+    <label class="city-search"><span aria-hidden="true">⌕</span><input id="city-search" type="search" placeholder="Начните вводить город" autocomplete="off"></label>
+    <div class="city-list" id="city-list">
+      <button type="button" data-city="Москва" data-count="128"><span class="city-mark violet-mark">М</span><span><strong>Москва</strong><small>128 студий</small></span><i>›</i></button>
+      <button type="button" data-city="Санкт-Петербург" data-count="84"><span class="city-mark aqua-mark">С</span><span><strong>Санкт-Петербург</strong><small>84 студии</small></span><i>›</i></button>
+      <button type="button" data-city="Казань" data-count="42"><span class="city-mark peach-mark">К</span><span><strong>Казань</strong><small>42 студии</small></span><i>›</i></button>
+      <button type="button" data-city="Екатеринбург" data-count="37"><span class="city-mark pink-mark">Е</span><span><strong>Екатеринбург</strong><small>37 студий</small></span><i>›</i></button>
+      <button type="button" data-city="Новосибирск" data-count="31"><span class="city-mark violet-mark">Н</span><span><strong>Новосибирск</strong><small>31 студия</small></span><i>›</i></button>
+      <button type="button" data-city="Сочи" data-count="26"><span class="city-mark aqua-mark">С</span><span><strong>Сочи</strong><small>26 студий</small></span><i>›</i></button>
+      <button type="button" data-city="Ростов-на-Дону" data-count="22"><span class="city-mark peach-mark">Р</span><span><strong>Ростов-на-Дону</strong><small>22 студии</small></span><i>›</i></button>
+    </div>
+    <div class="city-empty" id="city-empty"><span>⌁</span><strong>Такого города пока нет</strong><small>Оставьте заявку — подключим его следующим.</small></div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+  <script src="/js/discover.js"></script>
+</body>
+</html>

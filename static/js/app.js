@@ -33,6 +33,34 @@ function fmtDate(iso) {
 
 function formatPrice(p) { return p ? `${p.toLocaleString('ru')} ₽` : 'Бесплатно'; }
 
+async function shareOpenSlot() {
+  const active = document.querySelector('.quick-slot.active');
+  const time = active?.dataset.slot || '14:00';
+  const masterId = S.master?.telegram_id || window._devUserId || '';
+  const bookingUrl = `${window.location.origin}/book.html?master=${masterId}`;
+  const text = `Освободилось окно сегодня в ${time} ✨ Записаться: ${bookingUrl}`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'Свободное окно', text, url: bookingUrl });
+      showToast('Окно опубликовано');
+      return;
+    }
+    await navigator.clipboard.writeText(text);
+    showToast('Текст и ссылка скопированы');
+  } catch (error) {
+    if (error?.name !== 'AbortError') showToast('Не удалось поделиться', 'err');
+  }
+}
+
+function setupQuickSlots() {
+  document.querySelectorAll('.quick-slot').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.quick-slot').forEach(item => item.classList.remove('active'));
+      button.classList.add('active');
+    });
+  });
+}
+
 // ── Navigation ────────────────────────────────────────────────────────────────
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -127,6 +155,21 @@ async function renderHome() {
   // Today's bookings
   const today = new Date().toISOString().slice(0, 10);
   const todayBookings = await api.getBookings({ date: today }).catch(() => []);
+  const activeBookings = todayBookings
+    .filter(b => !['cancelled', 'completed'].includes(b.status))
+    .sort((a, b) => String(a.time).localeCompare(String(b.time)));
+  const nextBooking = activeBookings.find(b => b.time >= new Date().toTimeString().slice(0, 5)) || activeBookings[0];
+  if (nextBooking) {
+    $('next-booking-time').textContent = nextBooking.time;
+    $('next-client-name').textContent = nextBooking.client_name;
+    $('next-client-service').textContent = `${nextBooking.service_name} · ${formatPrice(nextBooking.price)}`;
+    $('next-client-avatar').textContent = nextBooking.client_name.trim().charAt(0).toUpperCase();
+  } else {
+    $('next-booking-time').textContent = 'Свободно';
+    $('next-client-name').textContent = 'Записей больше нет';
+    $('next-client-service').textContent = 'Поделитесь свободным окном с клиентами';
+    $('next-client-avatar').textContent = '↗';
+  }
   const container = $('today-bookings');
   if (!todayBookings.length) {
     container.innerHTML = '<div class="empty"><p>Записей на сегодня нет</p></div>';
@@ -559,4 +602,7 @@ toastStyle.textContent = `
 document.head.appendChild(toastStyle);
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  setupQuickSlots();
+  init();
+});

@@ -1,0 +1,8 @@
+.studio-list.grid-mode{display:grid;grid-template-columns:1fr 1fr}
+.studio-list.grid-mode .studio-cover{height:88px}
+.studio-list.grid-mode .studio-body{padding:12px}
+.studio-list.grid-mode .studio-meta span:nth-child(n+2),
+.studio-list.grid-mode .studio-tags,
+.studio-list.grid-mode .next-slot small{display:none}
+.studio-list.grid-mode .studio-bottom{align-items:flex-end;gap:6px}
+.studio-list.grid-mode .studio-bottom a{padding:8px;font-size:8px}
