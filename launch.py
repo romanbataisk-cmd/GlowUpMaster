@@ -139,11 +139,10 @@ async def setup_bot_menu(webapp_url: str):
         print(f"  ✓ Бот: @{me.username}")
         set_key(ENV_FILE, "BOT_USERNAME", me.username)
 
-        discover_url = f"{webapp_url.rstrip('/')}/discover.html"
         await bot.set_chat_menu_button(
             menu_button=MenuButtonWebApp(
-                text="⌁ Студии рядом",
-                web_app=WebAppInfo(url=discover_url)
+                text="✨ Открыть GlowUp",
+                web_app=WebAppInfo(url=webapp_url)
             )
         )
         print(f"  ✓ Кнопка приложения установлена → {webapp_url}")
@@ -196,16 +195,12 @@ async def run_bot(webapp_url: str):
             return
 
         # Обычный запуск
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(
-                text="⌁ Найти студию рядом",
-                web_app=WebAppInfo(url=f"{webapp_url.rstrip('/')}/discover.html")
-            )],
-            [InlineKeyboardButton(
-                text="✨ Кабинет мастера",
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[[
+            InlineKeyboardButton(
+                text="✨ Открыть GlowUp Master",
                 web_app=WebAppInfo(url=webapp_url)
-            )]
-        ])
+            )
+        ]])
         await message.answer(
             f"Привет, {user.first_name}! 👋\n\n"
             "🚀 <b>GlowUp Master</b> — управляй клиентами и записями прямо в Telegram.\n\n"
