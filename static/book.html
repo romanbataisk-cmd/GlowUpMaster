@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Запись к мастеру</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <style>
     *, *::before, *::after {
       box-sizing: border-box; margin: 0; padding: 0;
@@ -391,6 +392,7 @@
       100% { opacity:0; transform:translateY(110vh) rotate(540deg); }
     }
   </style>
+  <link rel="stylesheet" href="/css/book-premium.css">
 </head>
 <body>
 <div class="wrap">
@@ -398,15 +400,20 @@
   <!-- STEP 1: Services -->
   <div class="step on" id="step-1">
     <div class="master-top">
+      <a class="back-to-discover" href="/discover.html">← Все студии рядом</a>
+      <div class="studio-mark">GLOWUP <span>STUDIO</span></div>
       <div class="avatar-outer">
         <span class="avatar-letter" id="master-avatar-letter">?</span>
       </div>
       <div class="master-name" id="master-name">Загрузка…</div>
       <div class="master-spec" id="master-specialty"></div>
+      <div class="master-trust">
+        <span>★ 4.9</span><span>126 клиентов</span><span>Ответ за 5 мин</span>
+      </div>
     </div>
     <div class="progress"><div class="progress-bar" style="width:25%"></div></div>
     <div class="sec">
-      <div class="sec-label">Выберите услугу</div>
+      <div class="sec-title-row"><div class="sec-label">Выберите услугу</div><span>Шаг 1 из 3</span></div>
       <div class="svc-list" id="services-list"></div>
     </div>
   </div>
@@ -555,6 +562,7 @@
   </div>
 
 </div>
+<script src="/js/demo-api.js"></script>
 <script src="/js/book.js"></script>
 </body>
 </html>

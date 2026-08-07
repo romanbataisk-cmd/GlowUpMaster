@@ -12,12 +12,16 @@ PRICE_STARS = int(os.getenv("SUBSCRIPTION_PRICE_STARS", "299"))
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    keyboard = InlineKeyboardMarkup([[
-        InlineKeyboardButton(
-            "✨ Открыть GlowUp Master",
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton(
+            "⌁ Найти студию рядом",
+            web_app=WebAppInfo(url=f"{WEBAPP_URL.rstrip('/')}/discover.html")
+        )],
+        [InlineKeyboardButton(
+            "✨ Кабинет мастера",
             web_app=WebAppInfo(url=WEBAPP_URL)
-        )
-    ]])
+        )]
+    ])
     await update.message.reply_text(
         f"Привет, {user.first_name}! 👋\n\n"
         "🚀 <b>GlowUp Master</b> — управляй своими клиентами и записями прямо в Telegram.\n\n"
