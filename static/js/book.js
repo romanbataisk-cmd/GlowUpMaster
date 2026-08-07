@@ -10,6 +10,12 @@ const $ = id => document.getElementById(id);
 const MONTHS   = ['Январь','Февраль','Март','Апрель','Май','Июнь',
                   'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const DAY_NAMES = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const LOCAL_PREVIEW_SERVICES = [
+  { id: 901, name: 'Стрижка + укладка', description: 'Форма, мытьё и лёгкая укладка', duration: 75, price: 3200, prepay: 500 },
+  { id: 902, name: 'Окрашивание в один тон', description: 'Консультация и материалы включены', duration: 150, price: 6800, prepay: 1000 },
+  { id: 903, name: 'Экспресс-укладка', description: 'Для встречи, съёмки или события', duration: 45, price: 2400, prepay: 0 },
+  { id: 904, name: 'Уход и восстановление', description: 'Диагностика и персональный уход', duration: 60, price: 2900, prepay: 0 }
+];
 
 let calOffset = 0;
 
@@ -18,6 +24,7 @@ let calOffset = 0;
 function goStep(n) {
   document.querySelectorAll('.step').forEach(s => s.classList.remove('on'));
   $(`step-${n}`).classList.add('on');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   if (n === 5) launchConfetti();
 }
 
@@ -76,6 +83,9 @@ async function init() {
   try {
     S.master   = await fetch(`/api/public/master/${MASTER_ID}`, { headers: { 'ngrok-skip-browser-warning': '1' } }).then(r => r.json());
     S.services = await fetch(`/api/public/master/${MASTER_ID}/services`, { headers: { 'ngrok-skip-browser-warning': '1' } }).then(r => r.json());
+    if (!S.services.length && ['localhost', '127.0.0.1'].includes(location.hostname)) {
+      S.services = LOCAL_PREVIEW_SERVICES;
+    }
     renderMasterHeader();
     renderServices();
     goStep(1);
@@ -94,6 +104,15 @@ function renderMasterHeader() {
 }
 
 function renderServices() {
+  if (!S.services.length) {
+    $('services-list').innerHTML = `
+      <div class="booking-empty">
+        <b>Запись пока закрыта</b>
+        <p>У мастера ещё нет опубликованных услуг. Вернитесь в каталог и выберите другую студию рядом.</p>
+        <a href="/discover.html">← Вернуться к студиям</a>
+      </div>`;
+    return;
+  }
   $('services-list').innerHTML = S.services.map(s => `
     <div class="svc-card" onclick="selectService(${s.id})">
       <div class="svc-body">
@@ -152,7 +171,6 @@ async function selectDate(iso) {
   S.selectedTime = null;
   $('btn-to-confirm').disabled = true;
   $('selected-date').textContent = fmtDate(iso);
-  $('slots-section').style.display = 'block';
   renderCalendar();
   await loadSlots();
 }
@@ -170,14 +188,14 @@ async function loadSlots() {
     return;
   }
   $('time-grid').innerHTML = slots.map(t =>
-    `<div class="slot${t === S.selectedTime ? ' sel' : ''}" onclick="selectTime('${t}')">${t}</div>`
+    `<div class="slot${t === S.selectedTime ? ' sel' : ''}" onclick="selectTime('${t}', event)">${t}</div>`
   ).join('');
 }
 
-function selectTime(t) {
+function selectTime(t, ev) {
   S.selectedTime = t;
   document.querySelectorAll('.slot').forEach(el => el.classList.remove('sel'));
-  event.target.classList.add('sel');
+  ev.currentTarget.classList.add('sel');
   $('btn-to-confirm').disabled = false;
 }
 
